@@ -3,7 +3,7 @@ DFRobot_DHT11 DHT;
 #define DHT11_PIN 7
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(9600); // UART 통신 시적
 }
 
 void loop(){
