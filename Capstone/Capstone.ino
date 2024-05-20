@@ -26,9 +26,9 @@ void setup() {
   lcd.begin();
   lcd.backlight();
   lcd.setCursor(0, 0);
-  lcd.print("Hello World");
+  lcd.print("Smart Farm v1.0");
   lcd.setCursor(0, 1);
-  lcd.print("Arduino CLCD");
+  lcd.print("Press button");
 
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
@@ -82,7 +82,7 @@ void sensors_read() {
   button5 = digitalRead(BUTTON5);
 
   light = analogRead(LIGHT_SENSOR);
-  dht.read(TEMP_HUMID_SENSOR);
+  //dht.read(TEMP_HUMID_SENSOR);
 }
 
 int button1_push_check() {
