@@ -1,40 +1,33 @@
-#include <Servo.h>
 #include <LiquidCrystal_I2C.h>
-#define FAN 10 
-#define LED 11
-#define MOTOR1 8
-#define MOTOR2 9
+#include <Servo.h>
 
 Servo sv1;
 Servo sv2;
+bool angleReverse = false;
+int angle = 0;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
-  // // put your setup code here, to run once:
-  // pinMode(FAN, OUTPUT);
-  // pinMode(LED, OUTPUT);
-  // // digitalWrite(FAN, HIGH);
-  // // digitalWrite(LED, HIGH);
-  // sv1.attach(8);
-  // sv2.attach(9);
+  Serial.begin(9600);
+  lcd.begin();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Smart Farm v1.0");
 
-  // lcd.begin();
-  // lcd.noBacklight();
-  // lcd.setCursor(0, 0);
-  // lcd.print("Smart Farm v1.0");
+  sv1.attach(8);
+  sv2.attach(9);
 }
 
 void loop() {
-  // int angle = 0;
+  int data = analogRead(1);
+  Serial.println(data);
 
-  // for(angle = 0; angle < 180; angle++) {
-  //   sv1.write(angle);
-  //   sv2.write(angle);
-  //   delay(20);
-  // }
-  // for(angle = 180; angle > 0; angle--) {
-  //   sv1.write(angle);
-  //   sv2.write(angle);
-  //   delay(20);
-  // }
+  // sv1.write(angle);
+  // sv2.write(angle);
+  // delay(22);
+
+  // if(angleReverse) angle--;
+  // else angle++;
+
+  // if(angle == 0 || angle == 180) angleReverse = !angleReverse;
 }

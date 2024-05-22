@@ -1,5 +1,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <DFRobot_DHT11.h>
+#include <Servo.h>
 #include <Wire.h>
 
 #define BUTTON1 2
@@ -13,7 +14,9 @@
 #define FAN 10
 #define LED 11
 #define LIGHT_SENSOR 0
+#define HYDRATE_SENSOR 1
 bool humid_start = false;
+bool angleReverse = false;
 char str1[16], str2[16];
 int button1 = HIGH, button1_prev = HIGH;
 int button2 = HIGH, button2_prev = HIGH;
@@ -21,10 +24,14 @@ int button3 = HIGH, button3_prev = HIGH;
 int button4 = HIGH, button4_prev = HIGH;
 int button5 = HIGH, button5_prev = HIGH;
 int light = 0; // 밝을때 50, 어두울때 10
-int temp_min = 0, temp_max = 30;
+int hydrate = 0; // 수분 없을 때 100, 있을 때 60
+int temp_min = 24, temp_max = 30;
 int light_min = 10;
-int hydrate_min = 30, hydrate_max = 50;
-uint64_t preTime, nowTime;
+int hydrate_min = 99, hydrate_max = 120;
+int angle = 0;
+uint64_t sensorClockPreTime, sensorClockNowTime;
+uint64_t servoClockPreTime, servoClockNowTime;
+Servo sv1, sv2;
 DFRobot_DHT11 dht;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 typedef enum _Mode {
@@ -36,8 +43,7 @@ typedef enum _Mode {
 Mode mode = TEMP;
 
 void setup() {
-  preTime = millis();
-  Serial.begin(9600);
+  sensorClockPreTime = millis();
 
   lcd.begin();
   lcd.backlight();
@@ -49,16 +55,21 @@ void setup() {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
   pinMode(BUTTON5, INPUT_PULLUP);
+
+  // sv1.deattach(SPRINGCOOLER1);
+  // sv2.deattach(SPRINGCOOLER2);
+
+  pinMode(FAN, OUTPUT);
+  pinMode(LED, OUTPUT);
+  digitalWrite(FAN, HIGH);
+  digitalWrite(LED, HIGH);
 }
 
 void loop() {
-  nowTime = millis();
+  sensorClockNowTime = millis();
   sensors_read();
+  environment_check();
   lcd_print();
-  temp_min_check();
-  temp_max_check();
-  light_min_check();
-  hydrate_min_check();
 
   if(button1_push_check()) { // button1 누를 때
     button1_prev = LOW;
@@ -116,11 +127,30 @@ void sensors_read() {
   button4 = digitalRead(BUTTON4);
   button5 = digitalRead(BUTTON5);
 
-  if(nowTime - preTime >= 1000) {
-    preTime = nowTime;
+  if(sensorClockNowTime - sensorClockPreTime >= 1000) {
+    sensorClockPreTime = sensorClockNowTime;
 
     light = analogRead(LIGHT_SENSOR);
+    hydrate = analogRead(HYDRATE_SENSOR) / 10;
     dht.read(TEMP_HUMID_SENSOR);
+  }
+}
+
+void environment_check() {
+  if(dht.temperature < temp_min || light < light_min) digitalWrite(LED, LOW);
+  else                                                digitalWrite(LED, HIGH);
+
+  if(dht.temperature > temp_max) digitalWrite(FAN, LOW);
+  else                           digitalWrite(FAN, HIGH);
+
+  if(hydrate < hydrate_min) {
+    sv1.write(angle);
+    sv2.write(angle);
+
+    if(angleReverse) angle--;
+    else angle++;
+
+    if(angle == 0 || angle == 180) angleReverse = !angleReverse;
   }
 }
 
@@ -167,7 +197,7 @@ void lcd_print() {
       break;
 
     case HYDRATE :
-      sprintf(str1, "HYDRATE : %-2d    ", 0);
+      sprintf(str1, "HYDRATE : %-2d    ", hydrate);
       lcd.setCursor(0, 0);
       lcd.print(str1);
 
@@ -176,19 +206,6 @@ void lcd_print() {
       lcd.print(str2);
       break;
   }
-}
-
-void temp_min_check() {
-
-}
-void temp_max_check() {
-
-}
-void light_min_check() {
-  
-}
-void hydrate_min_check() {
-
 }
 
 int button1_push_check() {
