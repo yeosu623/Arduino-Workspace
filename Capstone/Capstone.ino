@@ -27,7 +27,7 @@ int light = 0; // 밝을때 50, 어두울때 10
 int hydrate = 0; // 수분 없을 때 100, 있을 때 60
 int temp_min = 24, temp_max = 30;
 int light_min = 10;
-int hydrate_min = 99, hydrate_max = 120;
+int hydrate_min = 30, hydrate_max = 80;
 int angle = 0;
 uint64_t sensorClockPreTime, sensorClockNowTime;
 uint64_t servoClockPreTime, servoClockNowTime;
@@ -56,8 +56,8 @@ void setup() {
   pinMode(BUTTON4, INPUT_PULLUP);
   pinMode(BUTTON5, INPUT_PULLUP);
 
-  // sv1.deattach(SPRINGCOOLER1);
-  // sv2.deattach(SPRINGCOOLER2);
+  sv1.attach(SPRINGCOOLER1);
+  sv2.attach(SPRINGCOOLER2);
 
   pinMode(FAN, OUTPUT);
   pinMode(LED, OUTPUT);
@@ -131,7 +131,7 @@ void sensors_read() {
     sensorClockPreTime = sensorClockNowTime;
 
     light = analogRead(LIGHT_SENSOR);
-    hydrate = analogRead(HYDRATE_SENSOR) / 10;
+    hydrate = analogRead(HYDRATE_SENSOR) / 10 - 50;
     dht.read(TEMP_HUMID_SENSOR);
   }
 }
